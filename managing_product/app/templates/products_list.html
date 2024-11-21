@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Tabs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            transition: color 0.3s, border-bottom 0.3s;
+        }
+        .tab:hover, .tab.active {
+            color: #007BFF;
+            border-bottom: 3px solid #007BFF;
+        }
+        #content {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .add-product-btn {
+            margin-bottom: 15px;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-container label {
+            font-weight: bold;
+        }
+        .filter-container input, .filter-container select {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 40%;
+        }
+
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .modal-content form div {
+            margin-bottom: 15px;
+        }
+
+        .modal-content form label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .modal-content form input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #filter-section input, select {
+            width: 8%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-content form select {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-content form button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+
+        #filter-section button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+
+        .modal-content form button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <a href="{% url 'products-list' %}">
+            <button class="tab active">Products</button>
+        </a>
+        <a href="{% url 'categories-list' %}">
+            <button class="tab">Categories</button>
+        </a>
+    </div>
+
+    <div id="content">
+        <div id="products">
+            <h1>Daftar Product</h1>
+            
+            <div id="filter-section">
+                <label for="categoryFilter">Filter by Category:</label>
+                <select id="categoryFilter">
+                    <option value="">All</option>
+                    {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <label for="minPrice">Min Price:</label>
+                <input type="number" id="minPrice" placeholder="Enter min price">
+                <label for="maxPrice">Max Price:</label>
+                <input type="number" id="maxPrice" placeholder="Enter max price">
+                <button id="applyFilterBtn" onclick="event.preventDefault()">Apply Filter</button>
+            </div>
+
+            <button class="add-product-btn" id="openModalBtn" onclick="toggleModal()">Add Product</button>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Number</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Created At</th>
+                        <th>Updated At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    {% for product in products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.description }}</td>
+                            <td>{{ product.price }}</td>
+                            <td>{{ product.category }}</td>
+                            <td>{{ product.created_at }}</td>
+                            <td>{{ product.updated_at }}</td>
+                            <td><a href="/products/{{ product.id }}/"><button class="btn-detail">Detail</button></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'product_form.html'%}
+
+    <script>
+        function toggleModal() {
+            var modal = document.getElementById('productModal');
+            if (modal.style.display === 'block') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'block';
+            }
+        }
+
+        document.getElementById('applyFilterBtn').addEventListener('click', function () {
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+
+            let query = `/products/?`;
+            if (selectedCategory) query += `category_name=${selectedCategory}&`;
+            if (minPrice) query += `min_price=${minPrice}&`;
+            if (maxPrice) query += `max_price=${maxPrice}`;
+            console.log(query)
+            window.location.href = query
+        });
+
+        var modal = document.getElementById('productModal');
+        var openModalBtn = document.getElementById('openModalBtn');
+        var closeModalBtn = document.getElementById('closeModalBtn');
+
+        openModalBtn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        closeModalBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn" onclick="toggleModal()">&times;</span>
+        <h2>Category Form</h2>
+        <form id="categoryForm" method="POST" onsubmit="event.preventDefault(); handleSubmit();">
+            <div>
+                <input id="category-id" style="display: none;" value="{{category.id}}">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required placeholder="Enter product name" value="{{category.name}}">
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" value="{{category.description}}" required placeholder="Enter product description">
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function handleSubmit() {
+            const name = document.getElementById('name').value
+            const id = document.getElementById('category-id').value
+            const old_name_el = document.getElementById('old_name')
+            var old_name = ''
+            if (old_name_el){
+                console.log(old_name_el)
+                old_name = old_name_el.children[-1];
+            }
+            const description = document.getElementById('description').value;
+            const csrftoken = getCookie('csrftoken');
+
+            const method = old_name!='' ? 'PUT' : 'POST';
+            const url = old_name!='' ? `/categories/${id}/` : '/categories/';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ name: name, description: description })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Category submitted successfully');
+                    window.location.href = url
+                } else {
+                    console.error('Failed to submit category');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+</script>

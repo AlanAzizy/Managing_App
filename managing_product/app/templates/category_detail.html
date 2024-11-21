@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            color: #555;
+        }
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-update {
+            background-color: #007bff;
+        }
+        .btn-update:hover {
+            background-color: #0056b3;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-delete:hover {
+            background-color: #b02a37;
+        }
+        .btn-back {
+            background-color: #6c757d;
+        }
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 40%;
+        }
+
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .modal-content form div {
+            margin-bottom: 15px;
+        }
+
+        .modal-content form label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .modal-content form input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-content form button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+
+        .modal-content form button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button type="button" class="btn-back" id="backButton">Back</button>
+        <h1>Category Detail</h1>
+        <p id="old_name"><strong>Name:</strong> {{ category.name }}</p>
+        <p><strong>Description:</strong> {{ category.description }}</p>
+        <div class="buttons">
+            <button type="submit" class="btn-update" onclick="toggleModal()">Update</button>
+            <button type="submit" class="btn-delete" onclick="deleteHandler()">Delete</button>
+        </div>
+    </div>
+
+    {% include 'category_form.html' %}
+
+    <script>
+        document.getElementById("backButton").onclick = function() {
+            window.location.href = '/categories/';
+        };
+
+        function toggleModal() {
+            var modal = document.getElementById('categoryModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        var modal = document.getElementById('categoryModal');
+        var closeModalBtn = document.getElementById('closeModalBtn');
+
+        closeModalBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function deleteHandler(){
+            const id = document.getElementById('category-id').value
+            const oldNameElement = document.getElementById('old_name');
+            const content = oldNameElement.innerHTML;
+            const name = content.replace(/<strong>Name:<\/strong>\s*/, '');
+
+            const csrftoken = getCookie('csrftoken');
+
+            fetch(`/categories/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'Application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Item deleted');
+                    window.location.href = '/categories/';
+                } else {
+                    console.error('Failed to delete');
+                }
+            }).catch(error => {
+                console.error('Error', error);
+            });
+        }
+
+        
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn" onclick="toggleModal()">&times;</span>
+        <h2>Product Form</h2>
+        <input style="display: none;" id="product-id" value="{{product.id}}">
+        <form id="productForm" >
+            <div>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required placeholder="Enter product name" value="{{ product.name }}">
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" value="{{ product.description }}" required placeholder="Enter product description">
+            </div>
+            <div>
+                <label for="price">Price:</label>
+                <input type="text" id="price" name="price" value="{{ product.price }}" required placeholder="Enter product price">
+            </div>
+            <div>
+                <label for="category">Category:</label>
+                <select type="text" id="category" name="category" required placeholder="Enter category">
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == product.category.id %} selected {% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button onclick="handleSubmit()" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function handleSubmit() {
+        const id = document.getElementById('product-id').value
+        const name = document.getElementById('name').value;
+        const description = document.getElementById('description').value;
+        const price = document.getElementById('price').value;
+        const category = document.getElementById('category').value;
+        const csrftoken = getCookie('csrftoken');
+        
+        const method = id!='' ? 'PUT' : 'POST';
+        const url = id!='' ? `/products/${id}/` : '/products/';
+
+        console.log(url)
+        const bodyData = JSON.stringify({
+            name: name,
+            description: description,
+            price: price,
+            category_name: category
+        });
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: bodyData
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Product submitted successfully');
+                toggleModal()
+            } else {
+                console.log(response)
+                console.error('Failed to submit product');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
